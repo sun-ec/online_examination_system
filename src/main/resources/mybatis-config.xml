@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="ojdbc.properties"/>
+
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+        <!-- 这个配置使全局的映射器启用或禁用缓存 -->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+
+    <typeAliases>
+        <package name="com.oes.model" />
+    </typeAliases>
+
+    <!-- 为所有的POJO类起别名,规则为POJO类的的简单类名首字母转换为小写 -->
+
+    <environments default="development">
+        <environment id="development">
+            <!-- 事务管理器类型 -->
+            <transactionManager type="JDBC"/>
+            <!-- 配置数据源 -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+         <package name="com.oes.mapper" />
+    </mappers>
+</configuration>

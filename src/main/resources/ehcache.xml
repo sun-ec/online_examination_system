@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd">
+    <!--  位置为：C:\Users\Administrator\AppData\Local\Temp -->
+    <diskStore path="java.io.tmpdir"/>
+
+    <defaultCache eternal="true"
+                  maxElementsInMemory="1000"
+                  overflowToDisk="true"
+                  diskPersistent="true"
+                  timeToIdleSeconds="0"
+                  timeToLiveSeconds="0"
+                  memoryStoreEvictionPolicy="LRU"
+                  statistics="true" />
+    <!--
+        配置自定义缓存
+        name：唯一标识cache实例；
+       eternal：表示cache是否过期，如果eternal为true，则对象永不过期；
+       maxEntriesLocalHeap：Memory中可保存的对象的最大数量，默认为0表示不限；
+       maxEntriesLocalDisk：Disk中可保存的对象的最大数量，默认为0表示不限；
+       maxBytesLocalHeap：该实例的最大可用Heap，不能超过<ehcache>中配置到CacheManager的最大Heap容量，如果使用了maxBytesLocalHeap，则不能使用maxBytesLocalHeap；
+       maxBytesLocalDisk：该实例的最大可用磁盘容量；
+       timeToIdleSeconds：表示对象最后一次访问到过期的时间，默认为0，表示不过期，该参数仅当eternal为false时有效；
+       timeToLiveSeconds：表示对象从创建到过期的时间，默认为0，表示不过期，该参数仅当eternal为false时有效；
+       memoryStoreEvictionPolicy：当cache的对象达到maxEntriesLocalHeap限制时使用的剔除策略，默认为LRU，可用值有：LRU, FIFO, LFU
+       maxElementsInMemory：缓存中允许创建的最大对象数
+       overflowToDisk：内存不足时，是否启用磁盘缓存。
+    -->
+    <!--
+       <cache name="com.lanqiao.mapper.UserMapperCache"
+            maxElementsInMemory="10000"
+            eternal="true"
+            overflowToDisk="true"
+            timeToIdleSeconds="0"
+            timeToLiveSeconds="600"
+            memoryStoreEvictionPolicy="LRU"/>
+
+         这种方法可在SQL_Mapper.xml文件中使用cache-ref元素引用缓存配置：
+            <cache-ref namespace="com.lanqiao.mapper.UserMapperCache"/>
+    -->
+</ehcache>

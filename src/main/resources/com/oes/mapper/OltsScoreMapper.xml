@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.OltsScoreMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseOltsScore" type="OltsScore">
+        <id property="id" column="ID"/>
+        <result property="score" column="SCORE"/>
+        <result property="fspScore" column="FSP_SCORE"/>
+        <result property="testDate" column="TEST_DATE"/>
+        <result property="descrpt" column="DESCRPT"/>
+        <result property="userId" column="USER_ID"/>
+        <result property="examNo" column="EXAM_NO"/>
+        <association property="oltsUsers" javaType="OltsUsers" columnPrefix="O_" resultMap="com.oes.mapper.OltsUsersMapper.baseOltsUsers"/>
+        <association property="examination" javaType="Examination" columnPrefix="E_" resultMap="com.oes.mapper.ExaminationMapper.baseExamination"/>
+    </resultMap>
+
+    <!--更新主观题成绩-->
+    <update id="update" parameterType="OltsScore">
+        update OLTS_SCORE set FSP_SCORE=#{fspScore} where ID=#{id}
+    </update>
+
+    <!--添加一条新的成绩-->
+    <insert id="save" parameterType="OltsScore">
+        insert into OLTS_SCORE values (OLTS_SCORE_SEQ.nextval,
+        #{score,jdbcType=NUMERIC},#{fspScore,jdbcType=NUMERIC},#{testDate,jdbcType=DATE},
+        #{descrpt,jdbcType=VARCHAR},#{userId,jdbcType=NUMERIC},#{examNo,jdbcType=VARCHAR})
+    </insert>
+
+    <!--通过考试编号和学生编号查询成绩-->
+    <select id="findByExamNoAndUserId" parameterType="OltsScore" resultMap="baseOltsScore" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and ol.USER_ID=#{userId}
+        and ol.EXAM_NO=#{examNo}
+    </select>
+
+    <!--通过成绩编号查找成绩-->
+    <select id="findById" parameterType="string" resultMap="baseOltsScore" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and ol.ID=#{id}
+    </select>
+
+    <!--通过学生编号查询成绩表-->
+    <select id="findByUserId" parameterType="string" resultMap="baseOltsScore">
+        <include refid="baseSelect"/>
+        and ol.USER_ID=#{userId}
+    </select>
+    
+    <!--通过考试编号查询成绩表-->
+    <select id="findByExamNo" parameterType="string" resultMap="baseOltsScore" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and ol.EXAM_NO=#{examNo}
+    </select>
+
+    <!--删除一条成绩-->
+    <delete id="delete" parameterType="string">
+        delete from OLTS_SCORE where ID=#{id}
+    </delete>
+    
+    <!--三表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select ol.*,
+                e.EXAM_NO E_EXAM_NO,
+                e.USER_ID E_USER_ID,
+                e.EXAM_DATE E_EXAM_DATE,
+                e.SINGLE_ID E_SINGLE_ID,
+                e.MULTIPLE_ID E_MULTIPLE_ID,
+                e.TRUE_FALSE_ID E_TRUE_FALSE_ID,
+                e.SIMPLE_ANWSER_ID E_SIMPLE_ANWSER_ID,
+                e.PROGRAM_ID E_PROGRAM_ID,
+                e.DESCRPT E_DESCRPT,
+                e.VALID_FLAG E_VALID_FLAG,
+                o.ID O_ID,
+                o.STU_NO O_STU_NO,
+                o.ID_CARD_NO O_ID_CARD_NO,
+                o.USER_NAME O_USER_NAME,
+                o.PASS_WORD O_PASS_WORD,
+                o.MOBILE O_MOBILE,
+                o.HOME_TEL O_HOME_TEL,
+                o.HOME_ADDR O_HOME_ADDR,
+                o.SCH_ADDR O_SCH_ADDR,
+                o.QQ O_QQ,
+                o.EMAIL O_EMAIL,
+                o.USER_TYPE O_USER_TYPE,
+                o.GENDER O_GENDER,
+                o.BIRTHDAY O_BIRTHDAY,
+                o.NATION_PLACE O_NATION_PLACE,
+                o.MARJOR O_MARJOR,
+                o.EDU_BACKGROUND O_EDU_BACKGROUND,
+                o.GRADUATE_SCHOOL O_GRADUATE_SCHOOL
+        from OLTS_SCORE ol,EXAMINATION e,OLTS_USERS o
+        where ol.EXAM_NO=e.EXAM_NO
+        and ol.USER_ID=o.ID
+    </sql>
+
+</mapper>

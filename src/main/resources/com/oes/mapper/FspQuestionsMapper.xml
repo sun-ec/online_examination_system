@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.FspQuestionsMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseFspQuestion" type="FspQuestions">
+        <id property="id" column="ID"/>
+        <result property="question" column="QUESTION"/>
+        <result property="stdAnswer" column="STD_ANSWER"/>
+        <result property="questionType" column="QUESTION_TYPE"/>
+        <result property="techCateId" column="TECH_CATE_ID"/>
+        <result property="pubdate" column="PUBDATE"/>
+        <result property="descrpt" column="DESCRPT"/>
+        <association property="techCategory" javaType="TechCategory" columnPrefix="T_" resultMap="com.oes.mapper.TechCategoryMapper.baseTechCategory" />
+    </resultMap>
+
+    <!--添加一条试题(简答题，编程题)-->
+    <insert id="save" parameterType="FspQuestions">
+        insert into FSP_QUESTIONS values(FSP_QUESTIONS_SEQ.nextval,
+          #{question},#{stdAnswer,jdbcType=CLOB},#{questionType},
+          #{techCateId,jdbcType=NUMERIC},#{pubdate,jdbcType=DATE},#{descrpt,jdbcType=VARCHAR})
+    </insert>
+
+    <!--删除试题(简答题，编程题)-->
+    <delete id="delete" parameterType="string">
+        delete from FSP_QUESTIONS where ID=#{id}
+    </delete>
+
+    <!--通过试题编号查询试题(简答题，编程题)-->
+    <select id="findById" parameterType="string" resultMap="baseFspQuestion" flushCache="false" useCache="true">
+        <include refid="baseSelect" />
+        and fs.ID=#{id}
+    </select>
+
+    <!--更新一条试题(简答题，编程题)-->
+    <update id="update" parameterType="FspQuestions">
+        update FSP_QUESTIONS
+            <set>
+                <if test="question != null">QUESTION=#{question},</if>
+                <if test="stdAnswer != null">STD_ANSWER=#{stdAnswer},</if>
+                <if test="questionType != null">QUESTION_TYPE=#{questionType},</if>
+                <if test="techCateId != null">TECH_CATE_ID=#{techCateId},</if>
+                <if test="pubdate != null">PUBDATE=#{pubdate},</if>
+                <if test="descrpt != null">DESCRPT=#{descrpt},</if>
+            </set>
+        where ID=#{id}
+    </update>
+
+    <!--分页查询试题(简答题，编程题)-->
+    <select id="selectByPage"  resultMap="baseFspQuestion" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        <if test="fspQuestions != null">
+            <if test="fspQuestions.questionType != null">and fs.QUESTION_TYPE=#{fspQuestions.questionType}</if>
+            <if test="fspQuestions.question != null">
+                <bind name="question" value="'%'+fspQuestions.question+'%'"/>
+                and fs.QUESTION like #{question}
+            </if>
+            <if test="fspQuestions.techCateId != null">and fs.TECH_CATE_ID=#{fspQuestions.techCateId}</if>
+        </if>
+        order by fs.ID
+    </select>
+
+    <!--二表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select fs.*,
+                t.ID T_ID,
+                t.TECH_CTGR T_TECH_CTGR,
+                t.COURSE_ID T_COURSE_ID
+        from FSP_QUESTIONS fs,TECH_CATEGORY t
+        where fs.TECH_CATE_ID=t.ID
+    </sql>
+
+</mapper>

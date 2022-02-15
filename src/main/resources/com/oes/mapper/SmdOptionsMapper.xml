@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.SmdOptionsMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseSmdOptions" type="SmdOptions">
+        <id property="id" column="ID"/>
+        <result property="optionA" column="OPTION_A"/>
+        <result property="optionB" column="OPTION_B"/>
+        <result property="optionC" column="OPTION_C"/>
+        <result property="optionD" column="OPTION_D"/>
+        <result property="optionE" column="OPTION_E"/>
+        <result property="questionId" column="QUESTION_ID"/>
+        <association property="smdQuestions" javaType="SmdQuestions" columnPrefix="SQ_" resultMap="com.oes.mapper.SmdQuestionsMapper.baseSmdQuestions"/>
+    </resultMap>
+
+    <!--分页查询单选题/多选题-->
+    <select id="selectByPage" resultMap="baseSmdOptions" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        <if test="smdOptions != null">
+            <if test="smdOptions.smdQuestions.question != null">
+                <bind name="question" value="'%'+smdOptions.smdQuestions.question+'%'"/>
+                and sq.QUESTION like #{question}
+            </if>
+            <if test="smdOptions.smdQuestions.questionType != null">and sq.QUESTION_TYPE=#{smdOptions.smdQuestions.questionType}</if>
+            <if test="smdOptions.smdQuestions.techCateId != null">and sq.TECH_CATE_ID=#{smdOptions.smdQuestions.techCateId}</if>
+        </if>
+    </select>
+
+    <!--添加一条单选、多选题选项-->
+    <insert id="save" parameterType="SmdOptions">
+      insert into SMD_OPTIONS values (
+        SMD_OPTIONS_SEQ.nextval,#{optionA},#{optionB},#{optionC},
+        #{optionD},#{optionE,jdbcType=VARCHAR},#{questionId})
+    </insert>
+
+    <!--删除选项-->
+    <delete id="delete" parameterType="string">
+        delete from SMD_OPTIONS where ID=#{id}
+    </delete>
+
+    <!--更新选项-->
+    <update id="update" parameterType="SmdOptions">
+        update SMD_OPTIONS
+        <set>
+            <if test="optionA != null">OPTION_A=#{optionA},</if>
+            <if test="optionB != null">OPTION_B=#{optionB},</if>
+            <if test="optionC != null">OPTION_C=#{optionC},</if>
+            <if test="optionD != null">OPTION_D=#{optionD},</if>
+            <if test="optionE != null">OPTION_E=#{optionE},</if>
+            <if test="questionId != null">QUESTION_ID=#{questionId},</if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <!--通过选项编号查找选项-->
+    <select id="findById" parameterType="string" resultMap="baseSmdOptions" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and so.ID=#{id}
+    </select>
+
+    <!--通过试题表(单选题，多选题)编号查找选项-->
+    <select id="findBySmdId" parameterType="string" resultMap="baseSmdOptions" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and so.QUESTION_ID=#{questionId}
+    </select>
+
+    <!--二表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select so.*,
+                sq.ID SQ_ID,
+                sq.QUESTION SQ_QUESTION,
+                sq.CORRECT SQ_CORRECT,
+                sq.QUESTION_TYPE SQ_QUESTION_TYPE,
+                sq.TECH_CATE_ID SQ_TECH_CATE_ID,
+                sq.DESCRPT SQ_DESCRPT,
+                sq.PUBDATE SQ_PUBDATE
+        FROM SMD_OPTIONS so,SMD_QUESTIONS sq
+        where so.QUESTION_ID=sq.ID
+    </sql>
+
+
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.TechCategoryMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseTechCategory" type="TechCategory">
+        <id property="id" column="ID"/>
+        <result property="techCtgr" column="TECH_CTGR"/>
+        <result property="courseId" column="COURSE_ID"/>
+        <association property="courses" javaType="Courses" columnPrefix="C_" resultMap="com.oes.mapper.CoursesMapper.baseCourses" />
+    </resultMap>
+
+    <!--查询所有知识点-->
+    <select id="findAll" resultMap="baseTechCategory">
+        <include refid="baseSelect"/>
+        order by t.ID
+    </select>
+
+    <!--通过课程号查询所属知识点-->
+    <select id="findByCourId" parameterType="string" resultMap="baseTechCategory" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and t.COURSE_ID=#{courId}
+    </select>
+
+    <select id="findAllLikeName" parameterType="TechCategory" resultMap="baseTechCategory" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        <if test="techCtgr != null">
+            <bind name="Ctgr" value="'%'+techCtgr+'%'"/>
+            and t.TECH_CTGR like #{Ctgr}
+        </if>
+        <if test="courseId != null">and t.COURSE_ID=${courseId}</if>
+    </select>
+
+    <!--通过知识点分类的编号查询对应知识点-->
+    <select id="findById" resultMap="baseTechCategory" parameterType="string" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+          and t.ID=#{id}
+    </select>
+
+    <!--添加一个新的知识点-->
+    <insert id="save" parameterType="TechCategory">
+        insert into TECH_CATEGORY values (TECH_CATEGORY_SEQ.nextval,#{techCtgr},#{courseId})
+    </insert>
+
+    <!--删除一个知识点-->
+    <delete id="delete" parameterType="string">
+        delete from TECH_CATEGORY where ID=#{id}
+    </delete>
+
+    <!--更新一个知识点-->
+    <update id="update" parameterType="TechCategory">
+        update TECH_CATEGORY
+        <set>
+            <if test="techCtgr != null">TECH_CTGR=#{techCtgr},</if>
+            <if test="courseId != null">COURSE_ID=#{courseId},</if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <!--二表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select t.*,
+                c.ID C_ID,
+                c.COURSE_NAME C_COURSE_NAME
+        from TECH_CATEGORY t,COURSES c
+        where t.COURSE_ID=c.ID
+    </sql>
+
+</mapper>

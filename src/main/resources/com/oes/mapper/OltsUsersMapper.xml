@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.OltsUsersMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseOltsUsers" type="OltsUsers">
+        <id property="id" column="ID" />
+        <result property="stuNo" column="STU_NO" />
+        <result property="idCardNo" column="ID_CARD_NO" />
+        <result property="userName" column="USER_NAME" />
+        <result property="passWord" column="PASS_WORD" />
+        <result property="mobile" column="MOBILE" />
+        <result property="homeTel" column="HOME_TEL" />
+        <result property="homeAddr" column="HOME_ADDR" />
+        <result property="schAddr" column="SCH_ADDR" />
+        <result property="qq" column="QQ" />
+        <result property="email" column="EMAIL" />
+        <result property="userType" column="USER_TYPE" />
+        <result property="gender" column="GENDER" />
+        <result property="birthday" column="BIRTHDAY" />
+        <result property="nationPlace" column="NATION_PLACE" />
+        <result property="marjor" column="MARJOR" />
+        <result property="eduBackground" column="EDU_BACKGROUND" />
+        <result property="graduateSchool" column="GRADUATE_SCHOOL" />
+    </resultMap>
+
+    <!--通过授课学校查询用户-->
+    <select id="findBySch" parameterType="string" resultMap="baseOltsUsers" flushCache="false" useCache="true">
+        select * from OLTS_USERS
+        <if test="sch != null and sch.trim().length>0"> where SCH_ADDR=#{sch}</if>
+        order by ID
+    </select>
+
+    <!--通过用户编号查找用户-->
+    <select id="findById" parameterType="string" resultMap="baseOltsUsers" flushCache="false" useCache="true">
+        select * from OLTS_USERS where ID=#{id}
+    </select>
+
+    <!--通过用户编号删除用户-->
+    <delete id="deleteById" parameterType="string">
+        delete from OLTS_USERS where ID=#{id}
+    </delete>
+
+    <!--通过用户名和密码进行登录-->
+    <select id="login" parameterType="OltsUsers" resultMap="baseOltsUsers" flushCache="false" useCache="true">
+        select * from OLTS_USERS where USER_NAME=#{userName} and PASS_WORD=#{passWord}
+    </select>
+
+    <!--添加一个新用户-->
+    <insert id="save" parameterType="OltsUsers">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select OLTS_USERS_SEQ.nextval from dual
+        </selectKey>
+        insert into OLTS_USERS values (#{id},#{stuNo,jdbcType=CHAR},#{idCardNo},#{userName},#{passWord},
+            #{mobile,jdbcType=VARCHAR},#{homeTel,jdbcType=VARCHAR},#{homeAddr,jdbcType=VARCHAR},
+            #{schAddr,jdbcType=VARCHAR},#{qq,jdbcType=VARCHAR},#{email,jdbcType=VARCHAR},
+            #{userType,jdbcType=VARCHAR},#{gender,jdbcType=VARCHAR},#{birthday,jdbcType=DATE},
+            #{nationPlace,jdbcType=VARCHAR},#{marjor,jdbcType=VARCHAR},#{eduBackground,jdbcType=VARCHAR},#{graduateSchool,jdbcType=VARCHAR})
+    </insert>
+
+    <!--更新一名用户的信息-->
+    <update id="update" parameterType="OltsUsers">
+        update OLTS_USERS
+          <set>
+              <if test="idCardNo != null">ID_CARD_NO=#{idCardNo},</if>
+              <if test="userName != null">USER_NAME=#{userName},</if>
+              <if test="passWord != null">PASS_WORD=#{passWord},</if>
+              <if test="mobile != null">MOBILE=#{mobile},</if>
+              <if test="homeTel != null">HOME_TEL=#{homeTel},</if>
+              <if test="homeAddr != null">HOME_ADDR=#{homeAddr},</if>
+              <if test="schAddr != null">SCH_ADDR=#{schAddr},</if>
+              <if test="qq != null">QQ=#{qq},</if>
+              <if test="email != null">EMAIL=#{email},</if>
+              <if test="gender != null">GENDER=#{gender},</if>
+              <if test="birthday != null">BIRTHDAY=#{birthday},</if>
+              <if test="nationPlace != null">NATION_PLACE=#{nationPlace},</if>
+              <if test="marjor != null">MARJOR=#{marjor},</if>
+              <if test="eduBackground != null">EDU_BACKGROUND=#{eduBackground},</if>
+              <if test="graduateSchool != null">GRADUATE_SCHOOL=#{graduateSchool},</if>
+          </set>
+          where ID=#{id}
+    </update>
+
+
+</mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.CoursesMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseCourses" type="Courses">
+        <id property="id" column="ID" />
+        <result property="courseName" column="COURSE_NAME" />
+    </resultMap>
+
+    <!--通过课程编号查找课程-->
+    <select id="findById" parameterType="string" resultMap="baseCourses" flushCache="false" useCache="true">
+        select * from COURSES where ID=#{id}
+    </select>
+
+    <select id="findAllLikeName" parameterType="string" resultMap="baseCourses" flushCache="false" useCache="true">
+        select * from COURSES where
+        <bind name="name" value="'%'+courseName+'%'"/>
+        COURSE_NAME like #{name}
+        order by ID
+    </select>
+
+    <!--查询所有课程-->
+    <select id="findAll" resultMap="baseCourses">
+        select * from COURSES order by ID
+    </select>
+
+    <!--添加一个新的课程-->
+    <insert id="save" parameterType="Courses">
+        insert into COURSES values (COURSE_SEQ.nextval,#{courseName})
+    </insert>
+
+    <!--删除一个课程-->
+    <delete id="delete" parameterType="string">
+        delete from COURSES where ID=#{id}
+    </delete>
+
+    <!--更新一个课程-->
+    <update id="update" parameterType="Courses">
+        update COURSES set COURSE_NAME=#{courseName} where ID=#{id}
+    </update>
+
+</mapper>

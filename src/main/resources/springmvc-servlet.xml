@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd">
+    <!-- 对web包中的所有类进行扫描，以完成Bean创建和自动依赖注入的功能 -->
+    <context:component-scan base-package="com.oes.controller"/>
+
+    <mvc:annotation-driven>
+        <mvc:async-support default-timeout="10"/><!--子元素可指定异步拦截器-->
+    </mvc:annotation-driven>
+
+    <mvc:default-servlet-handler/>
+
+    <!--<mvc:interceptors>-->
+        <!--<mvc:interceptor>-->
+            <!--&lt;!&ndash; 拦截所有的路径请求，包括：/ &ndash;&gt;-->
+            <!--<mvc:mapping path="/**"/>-->
+            <!--&lt;!&ndash; 此路径的请求不拦截 &ndash;&gt;-->
+            <!--<mvc:exclude-mapping path="/user/login"/>-->
+            <!--<mvc:exclude-mapping path="/user/logOut"/>-->
+            <!--<bean class="com.oes.interceptor.UserInterceptor" />-->
+        <!--</mvc:interceptor>-->
+    <!--</mvc:interceptors>-->
+
+
+
+    <!--对模型视图名称的解析，即在模型视图名称添加前后缀
+    Xxxcontroller.login(){
+        return "success"; //spring mvc 解析为一个对应的jsp（视图）/views/success.jsp
+    }
+    p:prefix="/views/" p:suffix=".jsp"
+    -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
+           p:suffix=".jsp">
+        <!-- 与p:prefix, p:suffix 等价
+        <property name="prefix" value="/views/" />
+        <property name="suffix" value=".jsp" />
+        -->
+        <!-- 如果使用jstl的话，配置下面的属性 -->
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+    </bean>
+
+    <!-- 文件上传和下载 请求解析器，
+        它会自动解析<form  enctype="multipart/form-data"> </form> 这种表单提交的请求
+    -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 文件上传时申请的内存大小 -->
+        <property name="maxInMemorySize" value="10240"/>
+        <!-- 文件上传时的临时目录有作数据缓存 -->
+        <property name="uploadTempDir" value="/upload"/>
+        <!-- 限制上传文件的大小 10M(10*1024*1024)-->
+        <property name="maxUploadSize" value="-1"/>
+    </bean>
+</beans>

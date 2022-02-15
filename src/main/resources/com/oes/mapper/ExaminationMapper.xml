@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.ExaminationMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseExamination" type="Examination">
+        <id property="examNo" column="EXAM_NO" />
+        <result property="userId" column="USER_ID" />
+        <result property="examDate" column="EXAM_DATE" />
+        <result property="singleId" column="SINGLE_ID" />
+        <result property="multipleId" column="MULTIPLE_ID" />
+        <result property="trueFalseId" column="TRUE_FALSE_ID" />
+        <result property="simpleAnwserId" column="SIMPLE_ANWSER_ID" />
+        <result property="programId" column="PROGRAM_ID" />
+        <result property="descrpt" column="DESCRPT" />
+        <result property="validFlag" column="VALID_FLAG" />
+        <association property="oltsUsers" javaType="OltsUsers" columnPrefix="O_" resultMap="com.oes.mapper.OltsUsersMapper.baseOltsUsers" />
+    </resultMap>
+
+    <!--查询所有试卷的编号-->
+    <select id="findAllExamNo" resultMap="baseExamination" flushCache="false" useCache="true">
+        select EXAM_NO from EXAMINATION order by EXAM_NO
+    </select>
+
+    <!--添加一个新的空试卷-->
+    <insert id="save" parameterType="Examination">
+        insert into EXAMINATION values
+        (#{examNo},#{userId},#{examDate,jdbcType=DATE},
+        #{singleId,jdbcType=VARCHAR},#{multipleId,jdbcType=VARCHAR},#{trueFalseId,jdbcType=VARCHAR},#{simpleAnwserId,jdbcType=VARCHAR},
+        #{programId,jdbcType=VARCHAR},#{descrpt,jdbcType=VARCHAR},#{validFlag,jdbcType=NUMERIC})
+    </insert>
+
+    <!--通过考卷编号查找考卷-->
+    <select id="findById" parameterType="string" resultMap="baseExamination" flushCache="false" useCache="true">
+        <include refid="baseSelect" />
+        and e.EXAM_NO=#{id}
+    </select>
+
+    <!--更新试卷所包含的题目-->
+    <update id="update" parameterType="Examination">
+        update EXAMINATION
+        <set>
+            <if test="singleId != null">SINGLE_ID=#{singleId},</if>
+            <if test="multipleId != null">MULTIPLE_ID=#{multipleId},</if>
+            <if test="trueFalseId != null">TRUE_FALSE_ID=#{trueFalseId},</if>
+            <if test="simpleAnwserId != null">SIMPLE_ANWSER_ID=#{simpleAnwserId},</if>
+            <if test="programId != null">PROGRAM_ID=#{programId},</if>
+        </set>
+    </update>
+
+
+    <!--二表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select e.*,
+                o.ID O_ID,
+                o.STU_NO O_STU_NO,
+                o.ID_CARD_NO O_ID_CARD_NO,
+                o.USER_NAME O_USER_NAME,
+                o.PASS_WORD O_PASS_WORD,
+                o.MOBILE O_MOBILE,
+                o.HOME_TEL O_HOME_TEL,
+                o.HOME_ADDR O_HOME_ADDR,
+                o.SCH_ADDR O_SCH_ADDR,
+                o.QQ O_QQ,
+                o.EMAIL O_EMAIL,
+                o.USER_TYPE O_USER_TYPE,
+                o.GENDER O_GENDER,
+                o.BIRTHDAY O_BIRTHDAY,
+                o.NATION_PLACE O_NATION_PLACE,
+                o.MARJOR O_MARJOR,
+                o.EDU_BACKGROUND O_EDU_BACKGROUND,
+                o.GRADUATE_SCHOOL O_GRADUATE_SCHOOL
+        from EXAMINATION e,OLTS_USERS o
+        where e.USER_ID=o.ID
+    </sql>
+
+</mapper>

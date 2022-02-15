@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.SmdQuestionsMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseSmdQuestions" type="SmdQuestions">
+        <id property="id" column="ID"/>
+        <result property="question" column="QUESTION"/>
+        <result property="correct" column="CORRECT"/>
+        <result property="questionType" column="QUESTION_TYPE"/>
+        <result property="techCateId" column="TECH_CATE_ID"/>
+        <result property="descrpt" column="DESCRPT"/>
+        <result property="pubdate" column="PUBDATE"/>
+        <association property="techCategory" javaType="TechCategory" columnPrefix="T_" resultMap="com.oes.mapper.TechCategoryMapper.baseTechCategory" />
+    </resultMap>
+
+    <!--分页查询试题(单选题，多选,判断题)-->
+    <select id="selectByPage" resultMap="baseSmdQuestions" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        <if test="smdQuestions != null">
+            <if test="smdQuestions.questionType != null">and sq.QUESTION_TYPE=#{smdQuestions.questionType}</if>
+            <if test="smdQuestions.techCateId != null">and sq.TECH_CATE_ID=#{smdQuestions.techCateId}</if>
+            <if test="smdQuestions.question != null">
+                <bind name="question" value="'%'+smdQuestions.question+'%'"/>
+                and sq.QUESTION like #{question}
+            </if>
+        </if>
+        order by sq.ID
+    </select>
+
+    <!--添加一条试题(单选题，多选,判断题)-->
+    <insert id="save" parameterType="SmdQuestions">
+        <selectKey keyProperty="id" resultType="string" order="BEFORE">
+            select SMD_QUESTIONS_SEQ.nextval from dual
+        </selectKey>
+        insert into SMD_QUESTIONS values (
+          #{id},#{question},#{correct},
+          #{questionType},#{techCateId},#{descrpt,jdbcType=VARCHAR},
+          #{pubdate,jdbcType=DATE})
+    </insert>
+
+    <!--通过试题编号查询试题-->
+    <select id="findById" resultMap="baseSmdQuestions" parameterType="string" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and sq.ID=#{id}
+    </select>
+
+    <!--更新试题-->
+    <update id="update" parameterType="SmdQuestions">
+        update SMD_QUESTIONS
+        <set>
+            <if test="question != null">QUESTION=#{question},</if>
+            <if test="correct != null">CORRECT=#{correct},</if>
+            <if test="questionType != null">QUESTION_TYPE=#{questionType},</if>
+            <if test="techCateId != null">TECH_CATE_ID=#{techCateId},</if>
+            <if test="descrpt != null">DESCRPT=#{descrpt},</if>
+            <if test="pubdate != null">PUBDATE=#{pubdate},</if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <!--删除试题-->
+    <delete id="delete" parameterType="string">
+        delete from SMD_QUESTIONS where ID=#{id}
+    </delete>
+
+    <!--二表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select sq.*,
+                t.ID T_ID,
+                t.TECH_CTGR T_TECH_CTGR,
+                t.COURSE_ID T_COURSE_ID
+        from SMD_QUESTIONS sq,TECH_CATEGORY t
+        where sq.TECH_CATE_ID=t.ID
+    </sql>
+
+</mapper>

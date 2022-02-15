@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+SQL Mapper xml: sql 映射文件，所有的SQL语句写在这种文件里。
+mapper为根节点。namespace属性是必须的且在整个系统内是唯一的。
+-->
+<mapper namespace="com.oes.mapper.FspAnswerMapper">
+
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+    <resultMap id="baseFspAnswer" type="FspAnswer">
+        <id property="id" column="ID"/>
+        <result property="answer" column="ANSWER"/>
+        <result property="fspId" column="FSP_ID"/>
+        <result property="examNo" column="EXAM_NO"/>
+        <result property="userId" column="USER_ID"/>
+        <association property="fspQuestions" javaType="FspQuestions" columnPrefix="FS_" resultMap="com.oes.mapper.FspQuestionsMapper.baseFspQuestion" />
+        <association property="examination" javaType="Examination" columnPrefix="E_" resultMap="com.oes.mapper.ExaminationMapper.baseExamination" />
+        <association property="oltsUsers" javaType="OltsUsers" columnPrefix="O_" resultMap="com.oes.mapper.OltsUsersMapper.baseOltsUsers" />
+    </resultMap>
+
+    <!--通过试卷编号和用户编号查询该用户作答的试卷的简答题，编程题答题内容-->
+    <select id="findAnswer" parameterType="FspAnswer" resultMap="baseFspAnswer" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and f.EXAM_NO=#{examNo}
+        and f.USER_ID=#{userId}
+    </select>
+
+    <!--通过试卷编号和用户编号和题号查询该用户作答的简答题，编程题答题内容-->
+    <select id="findAnswerStr" parameterType="FspAnswer" resultMap="baseFspAnswer" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and f.EXAM_NO=#{examNo}
+        and f.USER_ID=#{userId}
+        and f.FSP_ID=#{fspId}
+    </select>
+
+    <!--通过答题编号查询一条(填空题，简答题，编程题)学生答题-->
+    <select id="findById" parameterType="string" resultMap="baseFspAnswer" flushCache="false" useCache="true">
+        <include refid="baseSelect"/>
+        and f.ID=#{id}
+    </select>
+
+    <!--添加一条(填空题，简答题，编程题)学生答题-->
+    <insert id="save" parameterType="FspAnswer">
+        insert into FSP_ANSWER values (FSP_ANSWER_SEQ.nextval,
+        #{answer,jdbcType=CLOB},#{fspId},#{examNo},#{userId})
+    </insert>
+
+    <!--通过答题编号删除一条(填空题，简答题，编程题)学生答题-->
+    <delete id="delete" parameterType="string">
+        delete from FSP_ANSWER where ID=#{id}
+    </delete>
+
+    <!--更新一条(填空题，简答题，编程题)学生答题-->
+    <update id="update" parameterType="FspAnswer">
+        update FSP_ANSWER
+        <set>
+            <if test="answer != null">ANSWER=#{answer},</if>
+            <if test="fspId != null">FSP_ID=#{fspId},</if>
+            <if test="examNo != null">EXAM_NO=#{examNo},</if>
+            <if test="userId != null">USER_ID=#{userId},</if>
+        </set>
+        where ID=#{id}
+    </update>
+
+    <!--四表连接查询的公共语句-->
+    <sql id="baseSelect">
+        select f.*,
+                fs.ID FS_ID,
+                fs.QUESTION FS_QUESTION,
+                fs.STD_ANSWER FS_STD_ANSWER,
+                fs.QUESTION_TYPE FS_QUESTION_TYPE,
+                fs.TECH_CATE_ID FS_TECH_CATE_ID,
+                fs.PUBDATE FS_PUBDATE,
+                fs.DESCRPT FS_DESCRPT,
+                e.EXAM_NO E_EXAM_NO,
+                e.USER_ID E_USER_ID,
+                e.EXAM_DATE E_EXAM_DATE,
+                e.SINGLE_ID E_SINGLE_ID,
+                e.MULTIPLE_ID E_MULTIPLE_ID,
+                e.TRUE_FALSE_ID E_TRUE_FALSE_ID,
+                e.SIMPLE_ANWSER_ID E_SIMPLE_ANWSER_ID,
+                e.PROGRAM_ID E_PROGRAM_ID,
+                e.DESCRPT E_DESCRPT,
+                e.VALID_FLAG E_VALID_FLAG,
+                o.ID O_ID,
+                o.STU_NO O_STU_NO,
+                o.ID_CARD_NO O_ID_CARD_NO,
+                o.USER_NAME O_USER_NAME,
+                o.PASS_WORD O_PASS_WORD,
+                o.MOBILE O_MOBILE,
+                o.HOME_TEL O_HOME_TEL,
+                o.HOME_ADDR O_HOME_ADDR,
+                o.SCH_ADDR O_SCH_ADDR,
+                o.QQ O_QQ,
+                o.EMAIL O_EMAIL,
+                o.USER_TYPE O_USER_TYPE,
+                o.GENDER O_GENDER,
+                o.BIRTHDAY O_BIRTHDAY,
+                o.NATION_PLACE O_NATION_PLACE,
+                o.MARJOR O_MARJOR,
+                o.EDU_BACKGROUND O_EDU_BACKGROUND,
+                o.GRADUATE_SCHOOL O_GRADUATE_SCHOOL
+        from FSP_ANSWER f,FSP_QUESTIONS fs,EXAMINATION e,OLTS_USERS o
+        where f.FSP_ID=fs.ID
+        and f.EXAM_NO=e.EXAM_NO
+        and f.USER_ID=o.ID
+    </sql>
+
+</mapper>
